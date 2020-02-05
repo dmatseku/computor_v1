@@ -1,16 +1,16 @@
 use super::sign::Sign;
+use regex::*;
 
-pub struct Term {
+pub struct Monomial {
 	coefficient: u32,
 	power: u8,
 	sign: Sign
 }
 
-impl Term {
-    pub fn new(data: string) -> Term {
-        let result: Term;
-
-
+impl Monomial {
+    pub fn new(data: string) -> Monomial {
+        let result: Monomial;
+        let reg:    Regex  = Regex::new(r"(-|\+|- | \+ )?(\d+)?x(^\d+)*").unwrap();
     }
 
 	pub fn get_power(&self) -> u8 {
@@ -30,18 +30,18 @@ impl Term {
         }
     }
 
-    pub fn add(&mut self, term: &Term) -> Result<(), ()> {
-        if self.power == term.power {
-            if self.sign == term.sign {
-                self.coefficient += term.coefficient;
+    pub fn add(&mut self, monomial: &Monomial) -> Result<(), ()> {
+        if self.power == monomial.power {
+            if self.sign == monomial.sign {
+                self.coefficient += monomial.coefficient;
             }
             else {
-                if self.coefficient < term.coefficient {
-                    self.coefficient = term.coefficient - self.coefficient;
+                if self.coefficient < monomial.coefficient {
+                    self.coefficient = monomial.coefficient - self.coefficient;
                     self.change_sign();
                 }
                 else {
-                    self.coefficient -= term.coefficient;
+                    self.coefficient -= monomial.coefficient;
                 }
             }
         }
