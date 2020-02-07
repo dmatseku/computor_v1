@@ -7,48 +7,53 @@ pub struct Monomial {
 	sign: Sign
 }
 
+//r"^((\+ |- )?(-|\+)?((\d{0,9})|(\d{0,9}x(\^(\d{1,9}))?)))$"
+
 impl Monomial {
-    pub fn new(data: string) -> Monomial {
-        let result: Monomial;
-        let reg:    Regex  = Regex::new(r"(-|\+|- | \+ )?(\d+)?x(^\d+)*").unwrap();
-    }
+	pub fn new(data: string) -> Monomial {
+		let result: Monomial;
+		let data = Regex::new(
+			r"^((\+ |- )?(-|\+)?((\d{0,9})|(\d{0,9}x(\^(\d{1,9}))?)))$")
+			.unwrap().captures(data).unwrap();
+
+	}
 
 	pub fn get_power(&self) -> u8 {
-        self.power
-    }
+		self.power
+	}
 
-    pub fn get_sign(&self) -> Sign {
-        self.sign
-    }
+	pub fn get_sign(&self) -> Sign {
+		self.sign
+	}
 
-    pub fn change_sign(&mut self) {
-        if self.sign == Sign::Positive {
-            self.sign = Sign::Negative;
-        }
-        else {
-            self.sign = Sign::Positive;
-        }
-    }
+	pub fn change_sign(&mut self) {
+		if self.sign == Sign::Positive {
+			self.sign = Sign::Negative;
+		}
+		else {
+			self.sign = Sign::Positive;
+		}
+	}
 
-    pub fn add(&mut self, monomial: &Monomial) -> Result<(), ()> {
-        if self.power == monomial.power {
-            if self.sign == monomial.sign {
-                self.coefficient += monomial.coefficient;
-            }
-            else {
-                if self.coefficient < monomial.coefficient {
-                    self.coefficient = monomial.coefficient - self.coefficient;
-                    self.change_sign();
-                }
-                else {
-                    self.coefficient -= monomial.coefficient;
-                }
-            }
-        }
-        else {
-            return Err(());
-        }
+	pub fn add(&mut self, monomial: &Monomial) -> Result<(), ()> {
+		if self.power == monomial.power {
+			if self.sign == monomial.sign {
+				self.coefficient += monomial.coefficient;
+			}
+			else {
+				if self.coefficient < monomial.coefficient {
+					self.coefficient = monomial.coefficient - self.coefficient;
+					self.change_sign();
+				}
+				else {
+					self.coefficient -= monomial.coefficient;
+				}
+			}
+		}
+		else {
+			return Err(());
+		}
 
-        Ok(())
-    }
+		Ok(())
+	}
 }
