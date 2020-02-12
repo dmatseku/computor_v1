@@ -12,9 +12,8 @@ pub struct Monomial {
 impl Monomial {
 	pub fn new(data: string) -> Monomial {
 		let result: Monomial;
-		let data = Regex::new(
-			r"^((\+ |- )?(-|\+)?((\d{0,9})|(\d{0,9}x(\^(\d{1,9}))?)))$")
-			.unwrap().captures(data).unwrap();
+
+
 
 	}
 

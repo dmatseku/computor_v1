@@ -1,6 +1,6 @@
 mod get_input;
 mod sign;
-mod term;
+mod monomial;
 
 pub fn get_formula() -> String {
 
