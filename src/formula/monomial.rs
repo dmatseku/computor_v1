@@ -1,5 +1,4 @@
 use super::sign::Sign;
-use regex::*;
 use std::iter::Peekable;
 
 fn atoi(it: &mut Peekable<std::str::Chars>) -> u32 {
@@ -61,9 +60,9 @@ pub struct Monomial {
 //r"^((\+ |- )?(-|\+)?((\d{0,9})|(\d{0,9}x(\^(\d{1,9}))?)))$"
 
 impl Monomial {
-	pub fn new(data: string) -> Monomial {
+	pub fn new(mon_string: &str) -> Monomial {
 		let mut result: Monomial = Monomial {coefficient: 0, power: 0, sign: Sign::Positive};
-		let mut it = data.chars().peekable();
+		let mut it = mon_string.chars().peekable();
 
 		result.sign = skip(&mut it);
 		result.coefficient = match it.peek() {
