@@ -50,7 +50,7 @@ fn skip(it: &mut Peekable<std::str::Chars>) -> Sign {
 	res
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq)]
 pub struct Monomial {
 	coefficient: u32,
 	power: u32,
@@ -129,5 +129,11 @@ impl Monomial {
 		}
 
 		Ok(())
+	}
+}
+
+impl PartialEq for Monomial {
+	fn eq(&self, other: &Monomial) -> bool {
+		other.power == self.power
 	}
 }
