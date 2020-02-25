@@ -1,10 +1,9 @@
-mod sign;
 mod monomial;
 mod errors;
 
 use regex::Regex;
-use crate::formula::monomial::Monomial;
 use std::cmp::Ordering;
+use self::monomial::Monomial;
 
 pub struct Formula {
 	left_side: Vec<monomial::Monomial>,
@@ -12,8 +11,19 @@ pub struct Formula {
 }
 
 impl Formula {
+
+	pub fn get_left_side(&self) -> &Vec<monomial::Monomial> {
+		&self.left_side
+	}
+
+	pub fn get_right_side(&self) -> &Vec<monomial::Monomial> {
+		&self.right_side
+	}
+
 	fn create_vec(formula_sub_string: &str, side: &mut Vec<monomial::Monomial>) {
-		let re = Regex::new(r"((\+\s*|-\s*)?[-,+]?((\d{0,9}x(\^\d{1,9})?)|(\d{1,9})))").unwrap();
+		let re = Regex::new(
+			r"((\+\s*|-\s*)?[-,+]?((\d{0,9}\s*\*?\s*x(\^-?\d{1,9})?)|(\d{1,9})))"
+		).unwrap();
 		let caps = re.find_iter(formula_sub_string);
 
 		for str in caps {
@@ -29,24 +39,25 @@ impl Formula {
 			}
 		}
 
-		side.sort_unstable_by(|a, b| {
-			if a.get_power() > b.get_power() {
-				return Ordering::Less;
+		let mut i = 0;
+		while i < side.len() {
+			if side[i].get_coefficient() == 0 && side.len() > 1 {
+				side.remove(i);
+			} else {
+				i += 1;
 			}
-			else if a.get_power() < b.get_power() {
-				return Ordering::Greater;
-			}
-			Ordering::Equal
-		} );
+		}
 	}
 
 	pub fn new(formula_string: &str) -> Result<Formula, errors::SyntaxError> {
-		let mut res: Formula = Formula {left_side: Vec::new(), right_side: Vec::new() };
-		let re = Regex::new(format!("{}{}{}{}",
-				r"^\s*([-,+]?((\d{0,9}x(\^\d{1,9})?)|(\d{1,9})))\s*",
-				r"(((\+\s*|-\s*)?[-,+]?((\d{0,9}x(\^\d{1,9})?)|(\d{1,9})))\s*)*=",
-				r"\s*([-,+]?((\d{0,9}x(\^\d{1,9})?)|(\d{1,9})))\s*",
-				r"(((\+\s*|-\s*)?[-,+]?((\d{0,9}x(\^\d{1,9})?)|(\d{1,9})))\s*)*$").as_str()).unwrap();
+		let mut res: Formula = Formula { left_side: Vec::new(), right_side: Vec::new() };
+		let re = Regex::new(format!(
+			"{}{}{}{}",
+			r"^\s*([-,+]?((\d{0,9}\s*\*?\s*x(\^-?\d{1,9})?)|(\d{1,9})))\s*",
+			r"(((\+\s*|-\s*)?[-,+]?((\d{0,9}\s*\*?\s*x(\^-?\d{1,9})?)|(\d{1,9})))\s*)*=",
+			r"\s*([-,+]?((\d{0,9}\s*\*?\s*x(\^-?\d{1,9})?)|(\d{1,9})))\s*",
+			r"(((\+\s*|-\s*)?[-,+]?((\d{0,9}\s*\*?\s*x(\^-?\d{1,9})?)|(\d{1,9})))\s*)*$"
+		).as_str()).unwrap();
 
 		if re.is_match(formula_string) == false {
 			return Err(errors::SyntaxError);
@@ -56,18 +67,26 @@ impl Formula {
 
 		Formula::create_vec(substrings[0], &mut res.left_side);
 		Formula::create_vec(substrings[1], &mut res.right_side);
-		res.shorten();
+
+		res.reduce();
+		print!("Reduced form: ");
+		res.print_formula();
+		println!();
 
 		Ok(res)
 	}
 
-	fn shorten(&mut self) {
+	fn reduce(&mut self) {
 		while !self.right_side.is_empty() {
-			let mon = self.right_side.pop().unwrap();
+			let mut mon = self.right_side.pop().unwrap();
 
-			match self.left_side.iter_mut().find(|x| x.get_power() == mon.get_power()) {
+			mon.change_sign();
+			match self.left_side.iter_mut().position(|x| x.get_power() == mon.get_power()) {
 				Some(t) => {
-					t.add(&mon).unwrap();
+					self.left_side[t].add(&mon).unwrap();
+					if self.left_side[t].get_coefficient() == 0 && self.left_side.len() > 1 {
+						self.left_side.remove(t);
+					}
 				},
 				None => {
 					self.left_side.push(mon);
@@ -75,5 +94,52 @@ impl Formula {
 			}
 		}
 		self.right_side.push(Monomial::new("0"));
+
+		self.left_side.sort_unstable_by(|a, b| {
+			if a.get_power() > b.get_power() {
+				return Ordering::Less;
+			} else if a.get_power() < b.get_power() {
+				return Ordering::Greater;
+			}
+			Ordering::Equal
+		});
+	}
+}
+
+fn print_sign (mon: &Monomial, first: &mut bool) {
+	if *first {
+		if mon.get_coefficient() < 0 {
+			print!("-");
+		}
+		*first = false;
+	} else {
+		print!("{}", if mon.get_coefficient() < 0 { "- " } else { "+ " });
+	}
+}
+
+impl Formula {
+	pub fn print_formula(&self) {
+		let mut it = self.left_side.iter();
+		let mut first = true;
+
+		while match it.next() {
+			Some(t) => {
+				print_sign(t, &mut first);
+				print!("{} ", t);
+				true
+			},
+			None => false
+		} {}
+		print!("=");
+		first = true;
+		it = self.right_side.iter();
+		while match it.next() {
+			Some(t) => {
+				print_sign(t, &mut first);
+				print!(" {}", t);
+				true
+			},
+			None => false
+		} {}
 	}
 }

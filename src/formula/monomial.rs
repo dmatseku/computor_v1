@@ -1,7 +1,7 @@
-use super::sign::Sign;
 use std::iter::Peekable;
+use std::fmt::{Display, Formatter};
 
-fn atoi(it: &mut Peekable<std::str::Chars>) -> u32 {
+fn atoi(it: &mut Peekable<std::str::Chars>) -> i32 {
 	let mut res = 0;
 	let mut c: Option<&char> = it.peek();
 
@@ -11,7 +11,7 @@ fn atoi(it: &mut Peekable<std::str::Chars>) -> u32 {
 				if *t < '0' || *t > '9' {
 					break;
 				} else {
-					res = res * 10 + (*t as u32 - 48)
+					res = res * 10 + (*t as i32 - 48)
 				}
 			},
 			None => break
@@ -23,22 +23,17 @@ fn atoi(it: &mut Peekable<std::str::Chars>) -> u32 {
 	res
 }
 
-fn skip(it: &mut Peekable<std::str::Chars>) -> Sign {
+fn skip(it: &mut Peekable<std::str::Chars>) ->i32 {
 	let mut c = it.peek();
-	let mut res: Sign = Sign::Positive;
+	let mut res: i32 = 1;
 
 	while c.is_some() {
 		match c {
 			Some(t) => {
-				if *t >= '0' || *t <= '9' || *t == 'x' {
+				if (*t >= '0' && *t <= '9') || *t == 'x' {
 					break;
-				}
-				else if *t == '-' {
-					if res == Sign::Positive {
-						res = Sign::Negative;
-					} else {
-						res = Sign::Positive;
-					}
+				} else if *t == '-' {
+					res *= -1;
 				}
 			},
 			None => ()
@@ -52,38 +47,38 @@ fn skip(it: &mut Peekable<std::str::Chars>) -> Sign {
 
 #[derive(Copy, Clone, Eq)]
 pub struct Monomial {
-	coefficient: u32,
-	power: u32,
-	sign: Sign
+	coefficient: i32,
+	power: i32
 }
-
-//r"^((\+ |- )?(-|\+)?((\d{0,9})|(\d{0,9}x(\^(\d{1,9}))?)))$"
 
 impl Monomial {
 	pub fn new(mon_string: &str) -> Monomial {
-		let mut result: Monomial = Monomial {coefficient: 0, power: 0, sign: Sign::Positive};
+		let mut result: Monomial = Monomial { coefficient: 0, power: 0 };
 		let mut it = mon_string.chars().peekable();
+		let mut modifier: i32;
 
-		result.sign = skip(&mut it);
+		modifier = skip(&mut it);
 		result.coefficient = match it.peek() {
 			Some(t) => {
 				if *t == 'x' {
-					1
+					modifier
 				} else {
-					atoi(&mut it)
+					modifier * atoi(&mut it)
 				}
 			},
 			None => 0
 		};
 		result.power = match it.peek() {
-			Some(_t) => {
-				it.next();
-				skip(&mut it);
-				if it.peek().is_some() {
-					atoi(&mut it)
+			Some(t) => {
+				if *t != 'x' {
+					skip(&mut it);
 				}
-				else {
-					1
+				it.next();
+				modifier = skip(&mut it);
+				if it.peek().is_some() {
+					modifier * atoi(&mut it)
+				} else {
+					modifier
 				}
 			},
 			None => 0
@@ -92,39 +87,25 @@ impl Monomial {
 		result
 	}
 
-	pub fn get_power(&self) -> u32 {
+	pub fn get_coefficient(&self) -> i32 {
+		self.coefficient
+	}
+
+	pub fn get_power(&self) -> i32 {
 		self.power
 	}
 
-	pub fn get_sign(&self) -> Sign {
-		self.sign
-	}
-
 	pub fn change_sign(&mut self) {
-		if self.sign == Sign::Positive {
-			self.sign = Sign::Negative;
-		}
-		else {
-			self.sign = Sign::Positive;
-		}
+		self.coefficient *= -1;
 	}
 
 	pub fn add(&mut self, monomial: &Monomial) -> Result<(), ()> {
 		if self.power == monomial.power {
-			if self.sign == monomial.sign {
-				self.coefficient += monomial.coefficient;
+			self.coefficient += monomial.coefficient;
+			if self.coefficient == 0 {
+				self.power = 0;
 			}
-			else {
-				if self.coefficient < monomial.coefficient {
-					self.coefficient = monomial.coefficient - self.coefficient;
-					self.change_sign();
-				}
-				else {
-					self.coefficient -= monomial.coefficient;
-				}
-			}
-		}
-		else {
+		} else {
 			return Err(());
 		}
 
@@ -135,5 +116,30 @@ impl Monomial {
 impl PartialEq for Monomial {
 	fn eq(&self, other: &Monomial) -> bool {
 		other.power == self.power
+	}
+}
+
+impl Display for Monomial {
+	fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+		let mut coefficient = self.coefficient;
+
+		if coefficient < 0 {
+			coefficient *= -1;
+		}
+		if coefficient == 0 || self.power == 0 {
+			write!(f, "{}", coefficient)
+		} else if self.power == 1 {
+			if coefficient == 1 {
+				write!(f, "x")
+			} else {
+				write!(f, "{}x", coefficient)
+			}
+		} else {
+			if coefficient == 1 {
+				write!(f, "x^{}", self.power)
+			} else {
+				write!(f, "{}x^{}", coefficient, self.power)
+			}
+		}
 	}
 }
