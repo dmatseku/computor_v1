@@ -1,14 +1,34 @@
 mod formula;
 mod check_correct_form;
+mod find_answer;
+
+use std::env;
 
 fn main() {
-	match formula::Formula::new("6=5") {
-		Ok(t) => {
-			println!("Polynomial degree: {}", t.get_left_side()[0].get_power());
-			if !check_correct_form::check_correct_form(&t) {
-				return;
+	let args: Vec<String> = env::args().collect();
+	if args.len() < 2 {
+		println!("Too few arguments");
+	} else {
+		let mut it = args.iter();
+
+		it.next();
+		for input_str in it {
+			match formula::Formula::new(input_str) {
+				Ok(t) => {
+					let degree = t.get_left_side().last().unwrap().get_power();
+					println!("Polynomial degree: {}", degree);
+					if !check_correct_form::check_correct_form(&t) {
+						return;
+					}
+					if degree == 2 {
+						find_answer::square_answer(&t);
+					} else {
+						find_answer::simple_answer(&t);
+					}
+				},
+				Err(_e) => println!("Syntax error")
 			}
-		},
-		Err(_e) => println!("Syntax error")
+			println!();
+		}
 	}
 }

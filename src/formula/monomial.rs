@@ -3,43 +3,40 @@ use std::fmt::{Display, Formatter};
 
 fn atoi(it: &mut Peekable<std::str::Chars>) -> i32 {
 	let mut res = 0;
-	let mut c: Option<&char> = it.peek();
+	let mut opt: Option<&char> = it.peek();
 
-	while c.is_some() {
-		match c {
-			Some(t) =>  {
-				if *t < '0' || *t > '9' {
-					break;
-				} else {
-					res = res * 10 + (*t as i32 - 48)
-				}
-			},
-			None => break
+	//if char is not number, then I don't move an iterator
+	while opt.is_some() {
+		let c = *(opt.unwrap());
+
+		if c < '0' || c > '9' {
+			break;
+		} else {
+			res = res * 10 + (c as i32 - 48)
 		}
 		it.next();
-		c = it.peek();
+		opt = it.peek();
 	}
 
 	res
 }
 
+//function returns the final sign of a number
 fn skip(it: &mut Peekable<std::str::Chars>) ->i32 {
-	let mut c = it.peek();
+	let mut opt = it.peek();
 	let mut res: i32 = 1;
 
-	while c.is_some() {
-		match c {
-			Some(t) => {
-				if (*t >= '0' && *t <= '9') || *t == 'x' {
-					break;
-				} else if *t == '-' {
-					res *= -1;
-				}
-			},
-			None => ()
+	//if char is a number, then I don't move an iterator
+	while opt.is_some() {
+		let c = *(opt.unwrap());
+
+		if (c >= '0' && c <= '9') || c == 'X' {
+			break;
+		} else if c == '-' {
+			res *= -1;
 		}
 		it.next();
-		c = it.peek();
+		opt = it.peek();
 	}
 
 	res
@@ -57,10 +54,11 @@ impl Monomial {
 		let mut it = mon_string.chars().peekable();
 		let mut modifier: i32;
 
+		//skip to coefficient
 		modifier = skip(&mut it);
 		result.coefficient = match it.peek() {
 			Some(t) => {
-				if *t == 'x' {
+				if *t == 'X' { //coefficient wasn't entered
 					modifier
 				} else {
 					modifier * atoi(&mut it)
@@ -69,11 +67,11 @@ impl Monomial {
 			None => 0
 		};
 		result.power = match it.peek() {
-			Some(t) => {
-				if *t != 'x' {
-					skip(&mut it);
+			Some(t) => { //if 'X' entered
+				if *t != 'X' {
+					skip(&mut it); // skip a possible "\s*\*?\s*"
 				}
-				it.next();
+				it.next(); //skip 'X'
 				modifier = skip(&mut it);
 				if it.peek().is_some() {
 					modifier * atoi(&mut it)
@@ -119,7 +117,7 @@ impl PartialEq for Monomial {
 	}
 }
 
-impl Display for Monomial {
+impl Display for Monomial { //display in some variants
 	fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
 		let mut coefficient = self.coefficient;
 
@@ -130,15 +128,15 @@ impl Display for Monomial {
 			write!(f, "{}", coefficient)
 		} else if self.power == 1 {
 			if coefficient == 1 {
-				write!(f, "x")
+				write!(f, "X")
 			} else {
-				write!(f, "{}x", coefficient)
+				write!(f, "{}X", coefficient)
 			}
 		} else {
 			if coefficient == 1 {
-				write!(f, "x^{}", self.power)
+				write!(f, "X^{}", self.power)
 			} else {
-				write!(f, "{}x^{}", coefficient, self.power)
+				write!(f, "{}X^{}", coefficient, self.power)
 			}
 		}
 	}
