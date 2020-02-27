@@ -1,11 +1,11 @@
 use std::iter::Peekable;
 use std::fmt::{Display, Formatter};
 
-fn atoi(it: &mut Peekable<std::str::Chars>) -> i32 {
+fn str_to_i(it: &mut Peekable<std::str::Chars>) -> i32 {
 	let mut res = 0;
 	let mut opt: Option<&char> = it.peek();
 
-	//if char is not number, then I don't move an iterator
+	//if char is not number, then I don't move the iterator
 	while opt.is_some() {
 		let c = *(opt.unwrap());
 
@@ -21,11 +21,11 @@ fn atoi(it: &mut Peekable<std::str::Chars>) -> i32 {
 	res
 }
 
-fn atof(it: &mut Peekable<std::str::Chars>) -> f32 {
+fn str_to_f(it: &mut Peekable<std::str::Chars>) -> f32 {
 	let mut res = 0.0;
 	let mut opt: Option<&char> = it.peek();
 
-	//if char is not number, then I don't move an iterator
+	//if char is not number, then I don't move the iterator
 	while opt.is_some() {
 		let c = *(opt.unwrap());
 
@@ -58,12 +58,12 @@ fn atof(it: &mut Peekable<std::str::Chars>) -> f32 {
 	res
 }
 
-//function returns the final sign of a number
+//function returns the final sign of the number
 fn skip(it: &mut Peekable<std::str::Chars>) ->i32 {
 	let mut opt = it.peek();
 	let mut res: i32 = 1;
 
-	//if char is a number, then I don't move an iterator
+	//if char is a number, then I don't move the iterator
 	while opt.is_some() {
 		let c = *(opt.unwrap());
 
@@ -98,20 +98,18 @@ impl Monomial {
 				if *t == 'X' { //coefficient wasn't entered
 					modifier as f32
 				} else {
-					modifier as f32 * atof(&mut it)
+					modifier as f32 * str_to_f(&mut it)
 				}
 			},
 			None => 0.0
 		};
 		result.power = match it.peek() {
-			Some(t) => { //if 'X' entered
-				if *t != 'X' {
-					skip(&mut it); // skip a possible "\s*\*?\s*"
-				}
+			Some(_t) => { //if 'X' entered
+				skip(&mut it); // skip a possible "\s*\*?\s*"
 				it.next(); //skip 'X'
 				modifier = skip(&mut it);
 				if it.peek().is_some() {
-					modifier * atoi(&mut it)
+					modifier * str_to_i(&mut it)
 				} else {
 					modifier
 				}

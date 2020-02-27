@@ -2,10 +2,9 @@ use crate::formula::Formula;
 
 pub fn check_correct_form(form: &Formula) -> bool {
 	let left_last = form.get_left_side().last().unwrap();
-	let right_last = form.get_right_side().last().unwrap();
 
-	if form.get_left_side().len() == 1 && left_last.get_power() == right_last.get_power() {
-		if left_last.get_coefficient() == right_last.get_coefficient() {
+	if form.get_left_side().len() == 1 && left_last.get_power() == 0 {
+		if left_last.get_coefficient() == 0.0 {
 			println!("All the real numbers are solution");
 		} else {
 			println!("There are no solutions");

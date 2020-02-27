@@ -13,6 +13,8 @@ fn main() {
 
 		it.next();
 		for input_str in it {
+			println!("\n=== {} ===\n", input_str);
+
 			match formula::Formula::new(input_str) {
 				Ok(t) => {
 					let degree = t.get_left_side().last().unwrap().get_power();
@@ -28,7 +30,6 @@ fn main() {
 				},
 				Err(_e) => println!("Syntax error")
 			}
-			println!();
 		}
 	}
 }

@@ -2,17 +2,17 @@ use crate::formula::Formula;
 
 pub fn square_answer(formula: &Formula) {
 	let a: f32 =
-		match formula.get_left_side().get(2) {
+		match formula.get_left_side().iter().find(|x| x.get_power() == 2) {
 			Some(t) => t.get_coefficient(),
 			None =>	0.0
 		};
 	let b: f32 =
-		match formula.get_left_side().get(1) {
+		match formula.get_left_side().iter().find(|x| x.get_power() == 1) {
 			Some(t) => t.get_coefficient(),
 			None =>	0.0
 		};
 	let c: f32 =
-		match formula.get_left_side().get(0) {
+		match formula.get_left_side().iter().find(|x| x.get_power() == 0) {
 			Some(t) => t.get_coefficient(),
 			None =>	0.0
 		};
@@ -27,7 +27,7 @@ pub fn square_answer(formula: &Formula) {
 	} else {
 		println!("Discriminant is strictly positive: {}. The two solutions are:", d);
 		d = d.sqrt();
-		println!("{:.6}\n{:.6}", (-b - d) / (a * 2.0), (-b + d) / (a * 2.0));
+		println!("{}\n{}", (-b - d) / (a * 2.0), (-b + d) / (a * 2.0));
 	}
 }
 
