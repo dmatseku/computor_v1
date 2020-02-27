@@ -21,6 +21,43 @@ fn atoi(it: &mut Peekable<std::str::Chars>) -> i32 {
 	res
 }
 
+fn atof(it: &mut Peekable<std::str::Chars>) -> f32 {
+	let mut res = 0.0;
+	let mut opt: Option<&char> = it.peek();
+
+	//if char is not number, then I don't move an iterator
+	while opt.is_some() {
+		let c = *(opt.unwrap());
+
+		if c < '0' || c > '9' {
+			if c == '.' {
+				it.next();
+				opt = it.peek();
+			}
+			break;
+		} else {
+			res = res * 10.0 + (c as i32 - 48) as f32;
+		}
+		it.next();
+		opt = it.peek();
+	}
+	let mut i = 1;
+	while opt.is_some() {
+		let c = *(opt.unwrap());
+
+		if c < '0' || c > '9' {
+			break;
+		} else {
+			res += (c as i32 - 48) as f32 / (10 * i) as f32;
+		}
+		i += 1;
+		it.next();
+		opt = it.peek();
+	}
+
+	res
+}
+
 //function returns the final sign of a number
 fn skip(it: &mut Peekable<std::str::Chars>) ->i32 {
 	let mut opt = it.peek();
@@ -42,15 +79,15 @@ fn skip(it: &mut Peekable<std::str::Chars>) ->i32 {
 	res
 }
 
-#[derive(Copy, Clone, Eq)]
+#[derive(Copy, Clone)]
 pub struct Monomial {
-	coefficient: i32,
+	coefficient: f32,
 	power: i32
 }
 
 impl Monomial {
 	pub fn new(mon_string: &str) -> Monomial {
-		let mut result: Monomial = Monomial { coefficient: 0, power: 0 };
+		let mut result: Monomial = Monomial { coefficient: 0.0, power: 0 };
 		let mut it = mon_string.chars().peekable();
 		let mut modifier: i32;
 
@@ -59,12 +96,12 @@ impl Monomial {
 		result.coefficient = match it.peek() {
 			Some(t) => {
 				if *t == 'X' { //coefficient wasn't entered
-					modifier
+					modifier as f32
 				} else {
-					modifier * atoi(&mut it)
+					modifier as f32 * atof(&mut it)
 				}
 			},
-			None => 0
+			None => 0.0
 		};
 		result.power = match it.peek() {
 			Some(t) => { //if 'X' entered
@@ -85,7 +122,7 @@ impl Monomial {
 		result
 	}
 
-	pub fn get_coefficient(&self) -> i32 {
+	pub fn get_coefficient(&self) -> f32 {
 		self.coefficient
 	}
 
@@ -94,13 +131,13 @@ impl Monomial {
 	}
 
 	pub fn change_sign(&mut self) {
-		self.coefficient *= -1;
+		self.coefficient = -self.coefficient;
 	}
 
 	pub fn add(&mut self, monomial: &Monomial) -> Result<(), ()> {
 		if self.power == monomial.power {
 			self.coefficient += monomial.coefficient;
-			if self.coefficient == 0 {
+			if self.coefficient == 0.0 {
 				self.power = 0;
 			}
 		} else {
@@ -121,19 +158,19 @@ impl Display for Monomial { //display in some variants
 	fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
 		let mut coefficient = self.coefficient;
 
-		if coefficient < 0 {
-			coefficient *= -1;
+		if coefficient < 0.0 {
+			coefficient *= -1.0;
 		}
-		if coefficient == 0 || self.power == 0 {
+		if coefficient == 0.0 || self.power == 0 {
 			write!(f, "{}", coefficient)
 		} else if self.power == 1 {
-			if coefficient == 1 {
+			if coefficient == 1.0 {
 				write!(f, "X")
 			} else {
 				write!(f, "{}X", coefficient)
 			}
 		} else {
-			if coefficient == 1 {
+			if coefficient == 1.0 {
 				write!(f, "X^{}", self.power)
 			} else {
 				write!(f, "{}X^{}", coefficient, self.power)

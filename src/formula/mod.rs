@@ -22,7 +22,7 @@ impl Formula {
 
 	fn create_vec(formula_sub_string: &str, side: &mut Vec<monomial::Monomial>) { //create one side
 		let re = Regex::new(
-			r"((\+\s*|-\s*)?[-,+]?((\d{0,9}\s*\*?\s*X(\^-?\d{1,9})?)|(\d{1,9})))"
+			r"((\+\s*|-\s*)?[-,+]?(((\d{1,9}(.\d{1,6})?)?(\s*\*\s*)?X(\^-?\d{1,9})?)|(\d{1,9}(.\d{1,6})?)))"
 		).unwrap();
 		let caps = re.find_iter(formula_sub_string);
 
@@ -45,7 +45,7 @@ impl Formula {
 		//clear null's elements
 		let mut i = 0;
 		while i < side.len() {
-			if side[i].get_coefficient() == 0 && side.len() > 1 {
+			if side[i].get_coefficient() == 0.0 && side.len() > 1 {
 				side.remove(i);
 			} else {
 				i += 1;
@@ -59,10 +59,10 @@ impl Formula {
 		//super-duper regex for check input :)
 		let re = Regex::new(format!(
 			"{}{}{}{}",
-			r"^\s*([-,+]?((\d{0,9}\s*\*?\s*X(\^-?\d{1,9})?)|(\d{1,9})))\s*",
-			r"(((\+\s*|-\s*)[-,+]?((\d{0,9}\s*\*?\s*X(\^-?\d{1,9})?)|(\d{1,9})))\s*)*=",
-			r"\s*([-,+]?((\d{0,9}\s*\*?\s*X(\^-?\d{1,9})?)|(\d{1,9})))\s*",
-			r"(((\+\s*|-\s*)[-,+]?((\d{0,9}\s*\*?\s*X(\^-?\d{1,9})?)|(\d{1,9})))\s*)*$"
+			r"^\s*([-,+]?(((\d{1,9}(.\d{1,6})?)?(\s*\*\s*)?X(\^-?\d{1,9})?)|(\d{1,9}(.\d{1,6})?)))\s*",
+			r"(((\+\s*|-\s*)[-,+]?(((\d{1,9}(.\d{1,6})?)?(\s*\*\s*)?X(\^-?\d{1,9})?)|(\d{1,9}(.\d{1,6})?)))\s*)*=",
+			r"\s*([-,+]?(((\d{1,9}(.\d{1,6})?)?(\s*\*\s*)?X(\^-?\d{1,9})?)|(\d{1,9}(.\d{1,6})?)))\s*",
+			r"(((\+\s*|-\s*)[-,+]?(((\d{1,9}(.\d{1,6})?)?(\s*\*\s*)?X(\^-?\d{1,9})?)|(\d{1,9}(.\d{1,6})?)))\s*)*$"
 		).as_str()).unwrap();
 
 		if re.is_match(formula_string) == false {
@@ -94,7 +94,7 @@ impl Formula {
 			match self.left_side.iter_mut().position(|x| x.get_power() == mon.get_power()) {
 				Some(t) => {
 					self.left_side[t].add(&mon).unwrap();
-					if self.left_side[t].get_coefficient() == 0 && self.left_side.len() > 1 {
+					if self.left_side[t].get_coefficient() == 0.0 && self.left_side.len() > 1 {
 						self.left_side.remove(t);
 					}
 				},
@@ -118,12 +118,12 @@ impl Formula {
 
 fn print_sign (mon: &Monomial, first: &mut bool) {
 	if *first {
-		if mon.get_coefficient() < 0 {
+		if mon.get_coefficient() < 0.0 {
 			print!("-");
 		}
 		*first = false;
 	} else {
-		print!("{}", if mon.get_coefficient() < 0 { "- " } else { "+ " });
+		print!("{}", if mon.get_coefficient() < 0.0 { "- " } else { "+ " });
 	}
 }
 
