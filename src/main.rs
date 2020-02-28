@@ -6,14 +6,11 @@ use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     if args.len() < 2 {
         println!("Too few arguments");
     } else {
-        let mut it = args.iter();
-
-        it.next();
-        for input_str in it {
+        for input_str in args.iter().skip(1) {
             println!("\n=== {} ===\n", input_str);
 
             match formula::Formula::new(input_str) {

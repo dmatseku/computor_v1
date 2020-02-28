@@ -165,6 +165,7 @@ impl Display for Monomial {
         if coefficient < 0.0 {
             coefficient *= -1.0;
         }
+
         if coefficient == 0.0 || self.power == 0 {
             write!(f, "{}", coefficient)
         } else if self.power == 1 {

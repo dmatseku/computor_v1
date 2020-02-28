@@ -32,13 +32,11 @@ pub fn square_answer(formula: &Formula) {
 }
 
 pub fn simple_answer(formula: &Formula) {
-    let mut result: f32;
-
-    if formula.get_left_side()[0].get_power() == 0 {
-        result = formula.get_left_side()[0].get_coefficient() * -1.0;
+    let mut result: f32 = if formula.get_left_side()[0].get_power() == 0 {
+        formula.get_left_side()[0].get_coefficient() * -1.0
     } else {
-        result = 0.0;
-    }
+        0.0
+    };
 
     result /= formula.get_left_side().last().unwrap().get_coefficient();
     println!("The solution is: {}", result);
